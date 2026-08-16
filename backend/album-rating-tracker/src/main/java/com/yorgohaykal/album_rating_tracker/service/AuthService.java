@@ -1,6 +1,8 @@
 package com.yorgohaykal.album_rating_tracker.service;
 
 import com.yorgohaykal.album_rating_tracker.dto.AuthResponse;
+import com.yorgohaykal.album_rating_tracker.dto.LoginRequest;
+import com.yorgohaykal.album_rating_tracker.dto.LoginResponse;
 import com.yorgohaykal.album_rating_tracker.dto.RegisterRequest;
 import com.yorgohaykal.album_rating_tracker.entity.AppUser;
 import com.yorgohaykal.album_rating_tracker.entity.ScoringWeights;
@@ -19,6 +21,7 @@ public class AuthService {
     private final ScoringWeightsRepository scoringWeightsRepository;
     private final ScoringService scoringService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -40,5 +43,17 @@ public class AuthService {
         scoringWeightsRepository.save(defaultWeights);
 
         return new AuthResponse(savedUser.getId(), savedUser.getUsername(), savedUser.getEmail());
+    }
+
+    public LoginResponse login(LoginRequest request) {
+        AppUser user = appUserRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new IllegalArgumentException("Invalid username or password");
+        }
+
+        String token = jwtService.generateToken(user.getId(), user.getUsername());
+        return new LoginResponse(token, user.getId(), user.getUsername());
     }
 }

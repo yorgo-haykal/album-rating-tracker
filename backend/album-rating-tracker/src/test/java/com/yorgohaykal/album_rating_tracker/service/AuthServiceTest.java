@@ -32,6 +32,9 @@ public class AuthServiceTest {
 
     private ScoringService scoringService;
 
+    @Mock
+    private JwtService jwtService;
+
     @InjectMocks
     private AuthService authService;
 
@@ -40,7 +43,7 @@ public class AuthServiceTest {
     @BeforeEach
     void setUp() {
         scoringService = new ScoringService();
-        authService = new AuthService(appUserRepository, scoringWeightsRepository, scoringService, passwordEncoder);
+        authService = new AuthService(appUserRepository, scoringWeightsRepository, scoringService, passwordEncoder, jwtService);
 
         validRequest = new RegisterRequest();
         validRequest.setUsername("testuser");

@@ -1,6 +1,8 @@
 package com.yorgohaykal.album_rating_tracker.controller;
 
 import com.yorgohaykal.album_rating_tracker.dto.AuthResponse;
+import com.yorgohaykal.album_rating_tracker.dto.LoginRequest;
+import com.yorgohaykal.album_rating_tracker.dto.LoginResponse;
 import com.yorgohaykal.album_rating_tracker.dto.RegisterRequest;
 import com.yorgohaykal.album_rating_tracker.service.AuthService;
 import jakarta.validation.Valid;
@@ -21,5 +23,11 @@ public class AuthController {
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
         return ResponseEntity.status(201).body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        LoginResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
     }
 }
