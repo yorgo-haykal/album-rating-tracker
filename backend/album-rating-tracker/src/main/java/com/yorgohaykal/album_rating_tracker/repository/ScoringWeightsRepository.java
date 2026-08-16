@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface ScoringWeightsRepository extends JpaRepository<ScoringWeights, Long> {
 
-    Optional<ScoringWeights> findUserById(Long id);
+    Optional<ScoringWeights> findByUserId(Long id);
 }
