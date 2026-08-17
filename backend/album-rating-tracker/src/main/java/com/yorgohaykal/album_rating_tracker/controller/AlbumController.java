@@ -6,32 +6,26 @@ import com.yorgohaykal.album_rating_tracker.entity.ScoringWeights;
 import com.yorgohaykal.album_rating_tracker.repository.AlbumRepository;
 import com.yorgohaykal.album_rating_tracker.repository.ScoringWeightsRepository;
 import com.yorgohaykal.album_rating_tracker.service.ScoringService;
+import lombok.AllArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@AllArgsConstructor
 public class AlbumController {
 
     private final AlbumRepository albumRepository;
     private final ScoringWeightsRepository scoringWeightsRepository;
     private final ScoringService scoringService;
 
-    public AlbumController(
-            AlbumRepository albumRepository,
-            ScoringWeightsRepository scoringWeightsRepository,
-            ScoringService scoringService
-    ) {
-        this.albumRepository = albumRepository;
-        this.scoringWeightsRepository = scoringWeightsRepository;
-        this.scoringService = scoringService;
-    }
-
     @GetMapping("/api/albums")
-    public List<AlbumResponse> getAlbums(@RequestParam Long userId) {
+    public List<AlbumResponse> getAlbums(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+
         List<Album> albums = albumRepository.findByUserId(userId);
 
         ScoringWeights weights = scoringWeightsRepository.findByUserId(userId)
