@@ -12,11 +12,9 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,18 +27,35 @@ public class AlbumController {
     private final ScoringService scoringService;
 
     @GetMapping("/api/albums")
-    public List<AlbumResponse> getAlbums(Authentication authentication) {
+    public List<AlbumResponse> getAlbums(
+            Authentication authentication,
+            @RequestParam(required = false) String genre,
+            @RequestParam(required = false) String artist,
+            @RequestParam(defaultValue = "dateAdded") String sortBy,
+            @RequestParam(defaultValue = "desc") String order
+    ) {
         Long userId = (Long) authentication.getPrincipal();
 
-        List<Album> albums = albumRepository.findByUserId(userId);
+        List<Album> albums;
+        if (genre != null && !genre.isBlank()) {
+            albums = albumRepository.findByUserIdAndGenreIgnoreCase(userId, genre);
+        } else if (artist != null && !artist.isBlank()) {
+            albums = albumRepository.findByUserIdAndArtistContainingIgnoreCase(userId, artist);
+        } else {
+            albums = albumRepository.findByUserId(userId);
+        }
 
         ScoringWeights weights = scoringWeightsRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalStateException(
                         "No scoring weights found for user " + userId));
 
-        return albums.stream()
+        List<AlbumResponse> responses =  albums.stream()
                 .map(album -> toResponse(album, weights))
                 .collect(Collectors.toList());
+
+        sortResponses(responses, sortBy, order);
+
+        return responses;
     }
 
     @PostMapping("/api/albums")
@@ -91,6 +106,23 @@ public class AlbumController {
         response.setEmotionalImpactScore(album.getEmotionalImpactScore());
         response.setWeightedTotal(scoringService.calculateWeightedTotal(album, weights));
         return response;
+    }
+
+    private void sortResponses(List<AlbumResponse> responses, String sortBy, String order) {
+        Comparator<AlbumResponse> comparator = switch (sortBy) {
+            case "score" -> Comparator.comparing(AlbumResponse::getWeightedTotal);
+            case "artist" -> Comparator.comparing(AlbumResponse::getArtist, String.CASE_INSENSITIVE_ORDER);
+            case "genre" -> Comparator.comparing(r -> r.getGenre() == null ? "" : r.getGenre(),
+                    String.CASE_INSENSITIVE_ORDER
+            );
+            default -> Comparator.comparing(AlbumResponse::getDateAdded);
+        };
+
+        if ("desc".equalsIgnoreCase(order)) {
+            comparator = comparator.reversed();
+        }
+
+        responses.sort(comparator);
     }
 
 }
