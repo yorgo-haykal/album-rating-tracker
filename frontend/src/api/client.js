@@ -17,6 +17,14 @@ async function apiClient(endpoint, options={}) {
     headers,
   });
 
+  if (response.status === 401 || response.status === 403) {
+    // Token is missing, invalid, or expired the session is no longer valid.
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    window.location.href = '/login';
+    throw new Error('Session expired. Please log in again.');
+  }
+
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({ message: 'An error occurred' }));
     throw new Error(errorBody.message || `Request failed with status ${response.status}`);
