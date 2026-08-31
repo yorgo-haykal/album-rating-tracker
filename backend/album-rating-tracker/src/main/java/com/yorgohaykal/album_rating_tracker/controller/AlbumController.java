@@ -90,6 +90,21 @@ public class AlbumController {
         return ResponseEntity.status(201).body(toResponse(savedAlbum, weights));
     }
 
+    @DeleteMapping("/api/albums/{id}")
+    public ResponseEntity<Void> deleteAlbum(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        Long userId = (Long) authentication.getPrincipal();
+
+        Album album = albumRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new IllegalStateException("Album not found"));
+
+        albumRepository.delete(album);
+
+        return ResponseEntity.noContent().build();
+    }
+
     private AlbumResponse toResponse(Album album, ScoringWeights weights) {
         AlbumResponse response = new AlbumResponse();
         response.setId(album.getId());
