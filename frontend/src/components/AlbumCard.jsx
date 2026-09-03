@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import apiClient from '../api/client';
 
 const CRITERIA = [
   { key: 'songwritingScore', label: 'Songwriting' },
@@ -9,14 +10,40 @@ const CRITERIA = [
   { key: 'emotionalImpactScore', label: 'Emotional Impact' },
 ];
 
-function AlbumCard({ album }) {
+function AlbumCard({ album , onDelete}) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  async function handleDelete(e) {
+    e.stopPropagation();
+
+    const confirmed = window.confirm(`Delete "${album.title}" by ${album.artist}?`);
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      await apiClient(`/albums/${album.id}`, { method: 'DELETE' });
+      onDelete(album.id);
+    } catch (err) {
+      alert(`Failed to delete: ${err.message}`);
+      setIsDeleting(false);
+    }
+  }
 
   return (
     <div
       onClick={() => setIsExpanded(!isExpanded)}
-      className="bg-slate-800 rounded-lg p-5 border border-slate-700 hover:border-slate-600 transition-colors cursor-pointer"
+      className="bg-slate-800 rounded-lg p-5 border border-slate-700 hover:border-slate-600 transition-colors cursor-pointer relative"
     >
+      <button
+        onClick={handleDelete}
+        disabled={isDeleting}
+        className="absolute top-1 right-2 text-slate-500 hover:text-red-400 text-xs disabled:opacity-50"
+        title="Delete album"
+      >
+        {isDeleting ? '...' : '✕'}
+      </button>
+
       <div className="flex items-start justify-between mb-2">
         <div>
           <h2 className="text-white font-semibold">{album.title}</h2>

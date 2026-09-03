@@ -40,6 +40,10 @@ function AlbumList() {
     fetchAlbums();
   }, [fetchAlbums]);
 
+  function handleAlbumDeleted(deletedId) {
+    setAlbums((prev) => prev.filter((album) => album.id !== deletedId));
+  }
+
   return (
     <div className="min-h-screen bg-slate-900">
       <Navbar />
@@ -83,7 +87,7 @@ function AlbumList() {
         {!isLoading && !error && albums.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {albums.map((album) => (
-              <AlbumCard key={album.id} album={album} />
+              <AlbumCard key={album.id} album={album} onDelete={handleAlbumDeleted} />
             ))}
           </div>
         )}
