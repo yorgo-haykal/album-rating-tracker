@@ -2,7 +2,7 @@ import { useCallback, useEffect , useState } from "react";
 import { Link } from "react-router-dom";
 import apiClient from "../api/client";
 import AlbumCard from "../components/AlbumCard";
-import Navbar from "../components/NavBar";
+import Navbar from "../components/Navbar";
 import AlbumFilters from "../components/AlbumFilters";
 
 function AlbumList() {
