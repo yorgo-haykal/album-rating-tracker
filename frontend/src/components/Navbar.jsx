@@ -12,7 +12,11 @@ function Navbar() {
 
   return (
     <nav className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
-      <h1 className="text-xl font-bold text-white">Album Rating Tracker</h1>
+      <h1 className="text-xl font-bold">
+        <Link to="/albums" className="text-white hover:text-slate-300 transition-colors">
+          Album Rating Tracker
+        </Link>
+      </h1>
       <div className="flex items-center gap-4">
         <span className="text-slate-400 text-sm">Hi, {username}</span>
         <Link to="/albums/add" className="text-blue-400 hover:text-blue-300 text-sm font-medium">
